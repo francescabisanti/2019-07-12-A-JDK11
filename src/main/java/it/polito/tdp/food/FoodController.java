@@ -5,8 +5,11 @@
 package it.polito.tdp.food;
 
 import java.net.URL;
+import java.util.List;
 import java.util.ResourceBundle;
 
+import it.polito.tdp.food.model.Calorici;
+import it.polito.tdp.food.model.Food;
 import it.polito.tdp.food.model.Model;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -41,7 +44,7 @@ public class FoodController {
     private Button btnSimula; // Value injected by FXMLLoader
 
     @FXML // fx:id="boxFood"
-    private ComboBox<?> boxFood; // Value injected by FXMLLoader
+    private ComboBox<Food> boxFood; // Value injected by FXMLLoader
 
     @FXML // fx:id="txtResult"
     private TextArea txtResult; // Value injected by FXMLLoader
@@ -49,19 +52,61 @@ public class FoodController {
     @FXML
     void doCreaGrafo(ActionEvent event) {
     	txtResult.clear();
-    	txtResult.appendText("Creazione grafo...");
+    	txtResult.appendText("Creazione grafo..."+"\n");
+    	String por= this.txtPorzioni.getText();
+    	int porzioni;
+    	try {
+    		porzioni=Integer.parseInt(por);
+    		
+    	}catch(NumberFormatException e) {
+    		this.txtResult.setText("Inserisci un numero valido!");
+    		return;
+    	}
+    	this.model.creaGrafo(porzioni);
+    	this.txtResult.appendText("#VERTICI: "+model.getNVertici()+"\n");
+    	this.txtResult.appendText("#ARCHI: "+model.getNArchi()+"\n");
+    	this.boxFood.getItems().clear();
+    	for(Food f: this.model.getGrafo().vertexSet()) {
+    		this.boxFood.getItems().add(f);
+    	}
     }
     
     @FXML
     void doCalorie(ActionEvent event) {
     	txtResult.clear();
     	txtResult.appendText("Analisi calorie...");
+    	Food f1= this.boxFood.getValue();
+    	if(f1==null) {
+    		this.txtResult.setText("SELEZIONA IL CIBO DA TENDINA!");
+    		return;
+    	}
+    	if(this.model.getGrafo()==null) {
+    		this.txtResult.setText("DEVI creare prima il grafo!");
+    		return;
+    	}
+    	List<Calorici> result= model.trovaCalorici(f1);
+    	for(Calorici c: result) {
+    		this.txtResult.appendText(c.toString());
+    	}
+    	
     }
 
     @FXML
     void doSimula(ActionEvent event) {
     	txtResult.clear();
     	txtResult.appendText("Simulazione...");
+    	Food f1= this.boxFood.getValue();
+    	if(f1==null) {
+    		this.txtResult.setText("SELEZIONA IL CIBO DA TENDINA!");
+    		return;
+    	}
+    	if(this.model.getGrafo()==null) {
+    		this.txtResult.setText("DEVI creare prima il grafo!");
+    		return;
+    	}
+    	int k=Integer.parseInt(this.txtK.getText());
+    	String messaggio= this.model.simula(f1, k);
+    	this.txtResult.setText(messaggio+"\n");
     }
 
     @FXML // This method is called by the FXMLLoader when initialization is complete
